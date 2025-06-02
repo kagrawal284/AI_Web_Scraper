@@ -274,7 +274,7 @@ if "dom_content" in st.session_state:
     with col1:
         parse_description = st.text_area(
             "📝 What do you want to extract?",
-            placeholder="e.g., Extract all the urls along with their text from the webpage ...",
+            placeholder="e.g., Extract all the urls along with their text from the webpage, print them out in the form of table ...",
             height=100
         )
     
