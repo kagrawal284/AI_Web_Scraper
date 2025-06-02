@@ -477,49 +477,154 @@ def setup_chrome_driver():
     try:
         st.write("🚀 Setting up Chrome Browser...")
         
-        # Chrome options for headless mode
+        # Chrome options for headless mode - optimized for Chrome 137
         options = Options()
-        options.add_argument('--headless')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--disable-gpu')
-        options.add_argument('--disable-extensions')
-        options.add_argument('--disable-logging')
-        options.add_argument('--log-level=3')
-        options.add_argument('--disable-web-security')
-        options.add_argument('--disable-features=VizDisplayCompositor')
-        options.add_argument('--remote-debugging-port=9222')
-        options.add_argument('--disable-background-timer-throttling')
-        options.add_argument('--disable-background-networking')
-        options.add_argument('--disable-backgrounding-occluded-windows')
-        options.add_argument('--disable-renderer-backgrounding')
-        options.add_argument('--disable-features=TranslateUI')
-        options.add_argument('--disable-ipc-flooding-protection')
         
-        # Check if we're running on Streamlit Cloud
-        # This is the key difference - use system ChromeDriver directly
-        try:
-            # Try system ChromeDriver first (Streamlit Cloud)
-            service = ChromeService(ChromeDriverManager(driver_version="120.0.6099.109").install())
-            driver = webdriver.Chrome(service=service, options=options)
-            st.write("✅ Using system ChromeDriver (Streamlit Cloud)")
-            return driver
-        except:
+        # Check if we're running locally (Windows) or on cloud (Linux)
+        import platform
+        is_local = platform.system() == "Windows"
+        
+        if is_local:
+            # More conservative options for local Windows Chrome 137
+            options.add_argument('--headless')  # Use old headless for stability
+            options.add_argument('--disable-gpu')
+            options.add_argument('--no-sandbox')
+            options.add_argument('--disable-dev-shm-usage')
+            options.add_argument('--disable-extensions')
+            options.add_argument('--disable-logging')
+            options.add_argument('--log-level=3')
+            options.add_argument('--window-size=1920,1080')
+            # Remove problematic options for local
+        else:
+            # More aggressive options for Linux/Cloud
+            options.add_argument('--headless=new')
+            options.add_argument('--no-sandbox')
+            options.add_argument('--disable-dev-shm-usage')
+            options.add_argument('--disable-gpu')
+            options.add_argument('--disable-extensions')
+            options.add_argument('--disable-logging')
+            options.add_argument('--log-level=3')
+            options.add_argument('--disable-web-security')
+            options.add_argument('--disable-features=VizDisplayCompositor')
+            options.add_argument('--remote-debugging-port=9222')
+            options.add_argument('--disable-background-timer-throttling')
+            options.add_argument('--disable-background-networking')
+            options.add_argument('--disable-backgrounding-occluded-windows')
+            options.add_argument('--disable-renderer-backgrounding')
+            options.add_argument('--disable-features=TranslateUI')
+            options.add_argument('--disable-ipc-flooding-protection')
+            options.add_argument('--single-process')
+            options.add_argument('--disable-setuid-sandbox')
+            options.add_argument('--window-size=1920,1080')
+        
+        # Check if we're running locally (Windows) or on Streamlit Cloud (Linux)
+        import platform
+        is_local = platform.system() == "Windows"
+        
+        if is_local:
+            st.write("🖥️ Local Windows environment detected")
+            # For local development - use WebDriverManager
             try:
-                # Fallback for local development
+                st.write("🔄 Using WebDriverManager for local development...")
                 from webdriver_manager.chrome import ChromeDriverManager
+                
+                # Don't set binary location for local Windows
                 service = ChromeService(ChromeDriverManager().install())
                 driver = webdriver.Chrome(service=service, options=options)
-                st.write("✅ Using WebDriverManager (Local)")
+                st.write("✅ Success with WebDriverManager!")
                 return driver
             except Exception as e:
-                st.error(f"❌ Failed to setup ChromeDriver: {e}")
+                st.error(f"❌ WebDriverManager failed: {e}")
+                return None
+        else:
+            st.write("☁️ Streamlit Cloud (Linux) environment detected")
+            # For Streamlit Cloud - use system packages
+            
+            # Debug: Check what's actually installed
+            st.write("🔍 Checking installed browsers and drivers...")
+            
+            # Check browser paths
+            browser_paths = [
+                '/usr/bin/chromium',
+                '/usr/bin/chromium-browser', 
+                '/usr/bin/google-chrome',
+                '/usr/bin/google-chrome-stable'
+            ]
+            
+            available_browser = None
+            for path in browser_paths:
+                if os.path.exists(path):
+                    st.write(f"✅ Found browser: {path}")
+                    available_browser = path
+                    break
+                else:
+                    st.write(f"❌ Not found: {path}")
+            
+            # Check driver paths  
+            driver_paths = [
+                '/usr/bin/chromedriver',
+                '/usr/bin/chromium-driver'
+            ]
+            
+            available_driver = None
+            for path in driver_paths:
+                if os.path.exists(path):
+                    st.write(f"✅ Found driver: {path}")
+                    available_driver = path
+                    break
+                else:
+                    st.write(f"❌ Not found: {path}")
+            
+            # Try to get versions
+            if available_browser:
+                try:
+                    import subprocess
+                    result = subprocess.run([available_browser, '--version'], 
+                                          capture_output=True, text=True, timeout=5)
+                    st.write(f"**Browser version:** {result.stdout.strip()}")
+                except:
+                    st.write("**Browser version:** Could not determine")
+                    
+            if available_driver:
+                try:
+                    import subprocess
+                    result = subprocess.run([available_driver, '--version'], 
+                                          capture_output=True, text=True, timeout=5)
+                    st.write(f"**Driver version:** {result.stdout.strip()}")
+                except:
+                    st.write("**Driver version:** Could not determine")
+            
+            # Try to use what we found
+            if available_browser and available_driver:
+                st.write(f"🚀 Attempting to use: {available_browser} + {available_driver}")
+                options.binary_location = available_browser
+                
+                try:
+                    service = ChromeService(available_driver)
+                    driver = webdriver.Chrome(service=service, options=options)
+                    st.write(f"✅ Success! Using {available_browser} + {available_driver}")
+                    return driver
+                except Exception as e:
+                    st.write(f"❌ Failed: {str(e)[:200]}...")
+            
+            # If system packages don't work, try WebDriverManager as fallback
+            try:
+                st.write("🔄 Fallback: Trying WebDriverManager on Linux...")
+                from webdriver_manager.chrome import ChromeDriverManager
+                
+                # Remove binary location for WebDriverManager
+                options.binary_location = None
+                service = ChromeService(ChromeDriverManager().install())
+                driver = webdriver.Chrome(service=service, options=options)
+                st.write("✅ Success with WebDriverManager fallback!")
+                return driver
+            except Exception as e:
+                st.error(f"❌ All attempts failed: {e}")
                 return None
                 
     except Exception as e:
         st.error(f"❌ Error setting up Chrome options: {e}")
         return None
-
 
 def scrape_website(website):
     """
