@@ -227,11 +227,12 @@
 
 
 import selenium.webdriver as webdriver
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.service import Service  as ChromeService
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.utils import ChromeType
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import re
@@ -260,7 +261,9 @@ def scrape_website(website):
     # Use WebDriverManager to automatically handle ChromeDriver
     try:
         driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()),
+            service=ChromeService(
+            ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+        ),
             options=options
         )
     except Exception as e:
