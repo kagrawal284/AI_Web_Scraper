@@ -500,7 +500,7 @@ def setup_chrome_driver():
         # This is the key difference - use system ChromeDriver directly
         try:
             # Try system ChromeDriver first (Streamlit Cloud)
-            service = ChromeService('chromedriver.exe')
+            service = ChromeService(ChromeDriverManager(driver_version="120.0.6099.109").install())
             driver = webdriver.Chrome(service=service, options=options)
             st.write("✅ Using system ChromeDriver (Streamlit Cloud)")
             return driver
