@@ -181,17 +181,18 @@ load_dotenv()
 # Configure Streamlit page
 st.set_page_config(page_title="AI Web Scraper", page_icon="🌐", layout="wide")
 
-st.title("🌐 AI Web Scraper with Smart Caching")
-st.markdown("*Powered by Google Gemini 1.5 Flash with Quota Protection*")
+st.title("🌐 AI Web Scraper")
+st.markdown("*Powered by Google Gemini 1.5 Flash*")
 
 # Check for API key from .env file
 api_key = os.getenv("GOOGLE_API_KEY")
 
 # Check for API key and show status
 if api_key:
-    st.success("✅ API Key loaded from .env file!")
+    print(" API Key loaded from .env file!")
 else:
     st.error("❌ API Key not found!")
+    print("API Key not found!")
     st.markdown("""
     **To fix this:**
     1. Create a `.env` file in your project folder
@@ -208,6 +209,7 @@ with col1:
     url = st.text_input("🔗 Enter a website URL:", placeholder="https://example.com")
 
 with col2:
+    st.write(" ")  # Add some spacing
     st.write("")  # Add some spacing
     scrape_button = st.button("🚀 Scrape Site", type="primary", use_container_width=True)
 
@@ -227,14 +229,12 @@ if scrape_button and url:
                     st.session_state.scraped_url = url
                     
                     # Show scraping stats
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        st.metric("📄 Raw HTML", f"{len(result):,} chars")
-                    with col2:
-                        st.metric("🧹 Cleaned Content", f"{len(cleaned_content):,} chars")
-                    with col3:
-                        chunks = len(split_dom_content(cleaned_content))
-                        st.metric("📊 Processing Chunks", chunks)
+                    print("Raw HTML", f"{len(result):,} chars")
+                    
+                    print("Cleaned Content", f"{len(cleaned_content):,} chars")
+                    
+                    chunks = len(split_dom_content(cleaned_content))
+                    print("Processing Chunks", chunks)
                     
                     st.success(f"✅ Successfully scraped: {url}")
                     
@@ -318,27 +318,14 @@ if "dom_content" in st.session_state:
                 estimated_api_calls = len(dom_chunks) - cached_count
                 estimated_time = estimated_api_calls * rate_limit
                 
-                # Show processing info
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("📦 Total Chunks", len(dom_chunks))
-                with col2:
-                    st.metric("🎯 Cache Efficiency", f"{cache_efficiency:.1f}%")
-                with col3:
-                    st.metric("⏰ Est. Time", f"{estimated_time//60:.0f}m {estimated_time%60:.0f}s")
                 
-                if estimated_api_calls > 0:
-                    st.info(f"💡 Will make {estimated_api_calls} API calls. {cached_count} chunks will use cache.")
-                else:
-                    st.success("🚀 All chunks are cached! This will be instant.")
+                st.metric("⏰ Est. Time", f"{estimated_time//60:.0f}m {estimated_time%60:.0f}s")
                 
                 # Progress tracking
                 progress_bar = st.progress(0)
                 status_container = st.container()
                 results_container = st.container()
                 
-                with status_container:
-                    st.info(f"🚀 Processing {len(dom_chunks)} chunks with smart caching...")
                 
                 def update_progress(current, total, chunk_result=""):
                     progress = current / total
@@ -349,9 +336,9 @@ if "dom_content" in st.session_state:
                                    if parser._load_from_cache(parser._get_cache_key(chunk, parse_description)))
                     api_calls = current - cache_hits
                     
-                    status_container.info(f"⚡ Processing chunk {current}/{total} | Cache hits: {cache_hits} | API calls: {api_calls}")
+                    
                 
-                with st.spinner("🧠 AI is analyzing the content with quota protection..."):
+                with st.spinner("🧠 AI is analyzing the content..."):
                     parsed_result = parse_with_gemini(dom_chunks, parse_description, update_progress)
                 
                 progress_bar.progress(1.0)
@@ -361,7 +348,7 @@ if "dom_content" in st.session_state:
                                      if parser._load_from_cache(parser._get_cache_key(chunk, parse_description)))
                 final_api_calls = len(dom_chunks) - final_cache_hits
                 
-                status_container.success(f"✅ Parsing completed! Cache hits: {final_cache_hits}, API calls: {final_api_calls}")
+                status_container.success(f"✅ Parsing completed!")
                 
                 # Display results
                 with results_container:
@@ -420,27 +407,27 @@ if "dom_content" in st.session_state:
     elif parse_button and not parse_description:
         st.warning("⚠️ Please describe what you want to extract from the content.")
 
-# Footer
-st.divider()
-col1, col2, col3 = st.columns(3)
+# # Footer
+# st.divider()
+# col1, col2, col3 = st.columns(3)
 
-with col1:
-    st.markdown("🌟 **Smart Features:**")
-    st.markdown("- Intelligent caching")
-    st.markdown("- Quota protection")
-    st.markdown("- Rate limiting")
+# with col1:
+#     st.markdown("🌟 **Smart Features:**")
+#     st.markdown("- Intelligent caching")
+#     st.markdown("- Quota protection")
+#     st.markdown("- Rate limiting")
 
-with col2:
-    st.markdown("⚡ **Performance:**")
-    st.markdown("- 90%+ faster on repeat queries")
-    st.markdown("- Automatic error recovery")
-    st.markdown("- Progress tracking")
+# with col2:
+#     st.markdown("⚡ **Performance:**")
+#     st.markdown("- 90%+ faster on repeat queries")
+#     st.markdown("- Automatic error recovery")
+#     st.markdown("- Progress tracking")
 
-with col3:
-    st.markdown("🔗 **Links:**")
-    st.markdown("[Get API Key](https://aistudio.google.com/app/apikey)")
-    st.markdown("[Upgrade Plan](https://ai.google.dev/pricing)")
-    st.markdown("[Rate Limits Info](https://ai.google.dev/gemini-api/docs/rate-limits)")
+# with col3:
+#     st.markdown("🔗 **Links:**")
+#     st.markdown("[Get API Key](https://aistudio.google.com/app/apikey)")
+#     st.markdown("[Upgrade Plan](https://ai.google.dev/pricing)")
+#     st.markdown("[Rate Limits Info](https://ai.google.dev/gemini-api/docs/rate-limits)")
 
 
 
