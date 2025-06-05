@@ -23,7 +23,7 @@
 # # Sidebar for API key status
 # with st.sidebar:
 #     st.header("Configuration")
-    
+
 #     if api_key:
 #         st.success("✅ API Key loaded from .env file!")
 #     else:
@@ -54,14 +54,14 @@
 #         with st.spinner("🔍 Scraping the website..."):
 #             try:
 #                 result = scrape_website(url)
-                
+
 #                 if result:
 #                     body_content = extract_body_content(result, url)
 #                     cleaned_content = clean_body_content(body_content)
-                    
+
 #                     st.session_state.dom_content = cleaned_content
 #                     st.session_state.scraped_url = url
-                    
+
 #                     # Show scraping stats
 #                     col1, col2, col3 = st.columns(3)
 #                     with col1:
@@ -71,15 +71,15 @@
 #                     with col3:
 #                         chunks = len(split_dom_content(cleaned_content))
 #                         st.metric("📊 Processing Chunks", chunks)
-                    
+
 #                     st.success(f"✅ Successfully scraped: {url}")
-                    
+
 #                     with st.expander("👀 View Scraped Content", expanded=False):
 #                         st.text_area("DOM Content", cleaned_content, height=300)
-                        
+
 #                 else:
 #                     st.error("❌ Failed to scrape the website. Please check the URL and try again.")
-                    
+
 #             except Exception as e:
 #                 st.error(f"❌ Error scraping website: {str(e)}")
 
@@ -87,53 +87,53 @@
 # if "dom_content" in st.session_state:
 #     st.divider()
 #     st.header("🤖 Parse Content with AI")
-    
+
 #     col1, col2 = st.columns([3, 1])
-    
+
 #     with col1:
 #         parse_description = st.text_area(
 #             "📝 What do you want to extract?",
 #             placeholder="e.g., Extract all email addresses, Get the main headings, Find contact information...",
 #             height=100
 #         )
-    
+
 #     with col2:
 #         st.write("")  # Spacing
 #         st.write("")  # Spacing
 #         parse_button = st.button("🔍 Parse Content", type="primary", use_container_width=True)
-    
+
 #     if parse_button and parse_description:
 #         if not api_key:
 #             st.error("❌ Please check your .env file and restart the app!")
 #         else:
 #             try:
 #                 dom_chunks = split_dom_content(st.session_state.dom_content)
-                
+
 #                 # Progress tracking
 #                 progress_bar = st.progress(0)
 #                 status_container = st.container()
-                
+
 #                 with status_container:
 #                     st.info(f"🚀 Processing {len(dom_chunks)} chunks with Gemini 1.5 Flash...")
-                
+
 #                 def update_progress(current, total, chunk_result=""):
 #                     progress = current / total
 #                     progress_bar.progress(progress)
 #                     status_container.info(f"⚡ Processing chunk {current}/{total} - Gemini is super fast!")
-                
+
 #                 with st.spinner("🧠 AI is analyzing the content..."):
 #                     parsed_result = parse_with_gemini(dom_chunks, parse_description, update_progress)
-                
+
 #                 progress_bar.progress(1.0)
 #                 status_container.success("✅ Parsing completed!")
-                
+
 #                 # Display results
 #                 st.subheader("📋 Extracted Information")
-                
+
 #                 if parsed_result and parsed_result.strip() and "sorry" not in parsed_result.lower():
 #                     st.markdown("### Results:")
 #                     st.write(parsed_result)
-                    
+
 #                     # Download option
 #                     st.download_button(
 #                         label="💾 Download Results",
@@ -143,11 +143,11 @@
 #                     )
 #                 else:
 #                     st.warning("⚠️ No relevant information found for your query. Try a different description.")
-                
+
 #             except Exception as e:
 #                 st.error(f"❌ Error during parsing: {str(e)}")
 #                 st.info("💡 Make sure your Google API Key is valid and you have credits available.")
-    
+
 #     elif parse_button and not parse_description:
 #         st.warning("⚠️ Please describe what you want to extract from the content.")
 
@@ -156,13 +156,11 @@
 # st.markdown("""
 # <div style='text-align: center; color: #666;'>
 #     <small>
-#         🌟 Powered by Google Gemini 1.5 Flash | 
+#         🌟 Powered by Google Gemini 1.5 Flash |
 #         <a href='https://aistudio.google.com/app/apikey' target='_blank'>Get your API key</a>
 #     </small>
 # </div>
 # """, unsafe_allow_html=True)
-
-
 
 
 import streamlit as st
@@ -206,12 +204,14 @@ else:
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    url = st.text_input("🔗 Enter a website URL:", placeholder="https://example.com")
+    url = st.text_input("🔗 Enter a website URL:",
+                        placeholder="https://example.com")
 
 with col2:
     st.write(" ")  # Add some spacing
     st.write("")  # Add some spacing
-    scrape_button = st.button("🚀 Scrape Site", type="primary", use_container_width=True)
+    scrape_button = st.button(
+        "🚀 Scrape Site", type="primary", use_container_width=True)
 
 if scrape_button and url:
     if not api_key:
@@ -220,24 +220,24 @@ if scrape_button and url:
         with st.spinner("🔍 Scraping the website..."):
             try:
                 result = scrape_website(url)
-                
+
                 if result:
                     body_content = extract_body_content(result, url)
                     cleaned_content = clean_body_content(body_content)
-                    
+
                     st.session_state.dom_content = cleaned_content
                     st.session_state.scraped_url = url
-                    
+
                     # Show scraping stats
                     print("Raw HTML", f"{len(result):,} chars")
-                    
+
                     print("Cleaned Content", f"{len(cleaned_content):,} chars")
-                    
+
                     chunks = len(split_dom_content(cleaned_content))
                     print("Processing Chunks", chunks)
-                    
+
                     st.success(f"✅ Successfully scraped: {url}")
-                    
+
                     # Cache info for this content
                     try:
                         parser = GeminiParser()
@@ -248,19 +248,23 @@ if scrape_button and url:
                             cache_key = parser._get_cache_key(chunk, "test")
                             if parser._load_from_cache(cache_key):
                                 cached_count += 1
-                        
+
                         if cached_count > 0:
-                            cache_efficiency = (cached_count / len(test_chunks)) * 100
-                            st.info(f"🎯 Cache efficiency for this content: {cache_efficiency:.1f}% ({cached_count}/{len(test_chunks)} chunks cached)")
+                            cache_efficiency = (
+                                cached_count / len(test_chunks)) * 100
+                            st.info(
+                                f"🎯 Cache efficiency for this content: {cache_efficiency:.1f}% ({cached_count}/{len(test_chunks)} chunks cached)")
                     except:
                         pass
-                    
+
                     with st.expander("👀 View Scraped Content", expanded=False):
-                        st.text_area("DOM Content", cleaned_content, height=300)
-                        
+                        st.text_area(
+                            "DOM Content", cleaned_content, height=300)
+
                 else:
-                    st.error("❌ Failed to scrape the website. Please check the URL and try again.")
-                    
+                    st.error(
+                        "❌ Failed to scrape the website. Please check the URL and try again.")
+
             except Exception as e:
                 st.error(f"❌ Error scraping website: {str(e)}")
 
@@ -268,103 +272,93 @@ if scrape_button and url:
 if "dom_content" in st.session_state:
     st.divider()
     st.header("🤖 Parse Content with AI")
-    
+
     col1, col2 = st.columns([3, 1])
-    
+
     with col1:
         parse_description = st.text_area(
             "📝 What do you want to extract?",
             placeholder="e.g., Extract all the urls along with their text from the webpage, print them out in the form of table ...",
             height=100
         )
-    
+
     with col2:
         st.write("")  # Spacing
         st.write("")  # Spacing
-        parse_button = st.button("🔍 Parse Content", type="primary", use_container_width=True)
-    
-    # Advanced options
-    with st.expander("⚙️ Advanced Options", expanded=False):
-        col1, col2 = st.columns(2)
-        with col1:
-            chunk_size = st.slider("📦 Chunk Size", 4000, 12000, 8000, 1000, 
-                                 help="Larger chunks = fewer API calls but longer processing")
-        with col2:
-            rate_limit = st.slider("⏳ Rate Limit (seconds)", 3, 10, 5, 1,
-                                 help="Delay between API calls (higher = safer for quota)")
-    
+        parse_button = st.button(
+            "🔍 Parse Content", type="primary", use_container_width=True)
+        
+    rate_limit = 5
+
     if parse_button and parse_description:
         if not api_key:
             st.error("❌ Please check your .env file and restart the app!")
         else:
             try:
-                # Create custom chunks if different size specified
-                if chunk_size != 8000:
-                    dom_chunks = split_dom_content(st.session_state.dom_content, max_length=chunk_size)
-                else:
-                    dom_chunks = split_dom_content(st.session_state.dom_content)
-                
-                # Initialize parser with custom rate limiting
-                parser = GeminiParser(rate_limit_delay=rate_limit)
-                
+
+                dom_chunks = split_dom_content(
+                    st.session_state.dom_content)  
+                parser = GeminiParser(rate_limit_delay=rate_limit)  
+
                 # Pre-analysis: check cache efficiency
                 cached_count = 0
                 for chunk in dom_chunks:
                     cache_key = parser._get_cache_key(chunk, parse_description)
                     if parser._load_from_cache(cache_key):
                         cached_count += 1
-                
-                cache_efficiency = (cached_count / len(dom_chunks)) * 100 if dom_chunks else 0
+
+                cache_efficiency = (
+                    cached_count / len(dom_chunks)) * 100 if dom_chunks else 0
                 estimated_api_calls = len(dom_chunks) - cached_count
                 estimated_time = estimated_api_calls * rate_limit
-                
-                
-                st.metric("⏰ Est. Time", f"{estimated_time//60:.0f}m {estimated_time%60:.0f}s")
-                
+
+                st.metric(
+                    "⏰ Est. Time", f"{estimated_time//60:.0f}m {estimated_time%60:.0f}s")
+
                 # Progress tracking
                 progress_bar = st.progress(0)
                 status_container = st.container()
                 results_container = st.container()
-                
-                
+
                 def update_progress(current, total, chunk_result=""):
                     progress = current / total
                     progress_bar.progress(progress)
-                    
+
                     # Update status with cache info
-                    cache_hits = sum(1 for i, chunk in enumerate(dom_chunks[:current]) 
-                                   if parser._load_from_cache(parser._get_cache_key(chunk, parse_description)))
-                    api_calls = current - cache_hits
-                    
-                    
-                
-                with st.spinner("🧠 AI is analyzing the content..."):
-                    parsed_result = parse_with_gemini(dom_chunks, parse_description, update_progress)
-                
-                progress_bar.progress(1.0)
-                
-                # Final status update
-                final_cache_hits = sum(1 for chunk in dom_chunks 
+                    cache_hits = sum(1 for i, chunk in enumerate(dom_chunks[:current])
                                      if parser._load_from_cache(parser._get_cache_key(chunk, parse_description)))
+                    api_calls = current - cache_hits
+
+                with st.spinner("🧠 AI is analyzing the content..."):
+                    parsed_result = parse_with_gemini(
+                        dom_chunks, parse_description, update_progress)
+
+                progress_bar.progress(1.0)
+
+                # Final status update
+                final_cache_hits = sum(1 for chunk in dom_chunks
+                                       if parser._load_from_cache(parser._get_cache_key(chunk, parse_description)))
                 final_api_calls = len(dom_chunks) - final_cache_hits
-                
+
                 status_container.success(f"✅ Parsing completed!")
-                
+
                 # Display results
                 with results_container:
                     st.subheader("📋 Extracted Information")
-                    
+
                     if parsed_result and parsed_result.strip():
                         # Check if results were truncated due to quota limits
                         if "quota limits" in parsed_result.lower() or "max retries reached" in parsed_result.lower():
-                            st.warning("⚠️ Processing was stopped due to API quota limits. Results may be incomplete.")
-                            st.info("💡 Try again later or consider upgrading your Google API plan.")
+                            st.warning(
+                                "⚠️ Processing was stopped due to API quota limits. Results may be incomplete.")
+                            st.info(
+                                "💡 Try again later or consider upgrading your Google API plan.")
                         elif "sorry" not in parsed_result.lower():
                             st.success("🎉 Results extracted successfully!")
-                        
+
                         st.markdown("### Results:")
                         st.write(parsed_result)
-                        
+
                         # Download option
                         st.download_button(
                             label="💾 Download Results",
@@ -372,20 +366,24 @@ if "dom_content" in st.session_state:
                             file_name=f"scraped_data_{st.session_state.scraped_url.replace('https://', '').replace('/', '_')}.txt",
                             mime="text/plain"
                         )
-                        
+
                         # Show processing stats
                         with st.expander("📊 Processing Statistics", expanded=False):
                             st.write(f"**Total Chunks:** {len(dom_chunks)}")
                             st.write(f"**Cache Hits:** {final_cache_hits}")
                             st.write(f"**API Calls Made:** {final_api_calls}")
-                            st.write(f"**Cache Efficiency:** {(final_cache_hits/len(dom_chunks)*100):.1f}%")
-                            st.write(f"**Rate Limit:** {rate_limit} seconds between calls")
-                            
+                            st.write(
+                                f"**Cache Efficiency:** {(final_cache_hits/len(dom_chunks)*100):.1f}%")
+                            st.write(
+                                f"**Rate Limit:** {rate_limit} seconds between calls")
+
                             if final_api_calls > 0:
-                                st.write(f"**Quota Usage:** ~{final_api_calls} requests from your daily limit")
+                                st.write(
+                                    f"**Quota Usage:** ~{final_api_calls} requests from your daily limit")
                     else:
-                        st.warning("⚠️ No relevant information found for your query. Try a different description.")
-                
+                        st.warning(
+                            "⚠️ No relevant information found for your query. Try a different description.")
+
             except Exception as e:
                 error_msg = str(e)
                 if "429" in error_msg or "quota" in error_msg.lower():
@@ -402,10 +400,12 @@ if "dom_content" in st.session_state:
                     """)
                 else:
                     st.error(f"❌ Error during parsing: {error_msg}")
-                    st.info("💡 Make sure your Google API Key is valid and you have credits available.")
-    
+                    st.info(
+                        "💡 Make sure your Google API Key is valid and you have credits available.")
+
     elif parse_button and not parse_description:
-        st.warning("⚠️ Please describe what you want to extract from the content.")
+        st.warning(
+            "⚠️ Please describe what you want to extract from the content.")
 
 # # Footer
 # st.divider()
@@ -428,7 +428,3 @@ if "dom_content" in st.session_state:
 #     st.markdown("[Get API Key](https://aistudio.google.com/app/apikey)")
 #     st.markdown("[Upgrade Plan](https://ai.google.dev/pricing)")
 #     st.markdown("[Rate Limits Info](https://ai.google.dev/gemini-api/docs/rate-limits)")
-
-
-
-
